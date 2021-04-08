@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaquita Dashboard</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="./css/metricsgraphics.css">  
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src='./js/metricsgraphics.js'></script>
+
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+            
+
+
+    <script>
+        window.addEventListener('load', RenderGraphs);
+        function RenderGraphs(){
+            LoadTelemetryData("Temperature",true);
+            LoadTelemetryData("Humidity",true);
+            LoadTelemetryData("Pressure", false);
+            LoadTelemetryData("Illuminance",true)
+        }
+        function LoadTelemetryData(param, minyfromdata) {
+            
+            var url = "https://europe-west3-vaquita-technologies.cloudfunctions.net/vaquitattnhttpintegration?param=" + param;
+            d3.json(url,data => {
+                data.map(d => {
+                    d.date = new Date(d.date);                    
+                    return d;
+                });                
+                MG.data_graphic({
+                    title: param,                    
+                    data: data,
+                    width: 300,
+                    height: 200,
+                    right: 40,
+                    min_y_from_data:minyfromdata,                                        
+                    target: document.getElementById('ts'+param),
+                    x_accessor: 'date',
+                    y_accessor: 'value'
+                });
+            });
+        }
+        function convertUTCDateToLocalDate(date) {
+            var newDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
+            var offset = date.getTimezoneOffset() / 60;
+            var hours = date.getHours();
+            newDate.setHours(hours - offset);
+            return newDate;
+        }
+    </script>
+</head>
+<body  style="font-family: 'Abel', sans-serif;">
+    <div class="pageHeader center-align">
+        <img class=" center-align" src="./images/logo.png">
+    </div>
+    <div class="pageSubHeader center-align">
+        Readings from the TTN Integration
+    </div>
+    <div class="container">
+        <div class="row center-align">
+            <div class="col s12 m6" id="tsTemperature" ></div>
+            <div class="col s12 m6" id="tsHumidity" ></div>                
+        </div>
+        <div class="row center-align">           
+            <div class="col s12 m6" id="tsPressure" ></div>
+            <div class="col s12 m6" id="tsIlluminance" ></div>        
+        </div>
+    </div> 
+    <footer class="site-footer">
+        (C) Vaquita Technologies 2021
+    </footer>
+   
+</body>
+
+</html>
